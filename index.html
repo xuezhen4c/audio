@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<style>
+	*{ margin:0;padding:0;list-style:none;}
+	ul{ width:200px;border:1px solid darkred;}
+	li{ border-bottom: 1px solid red;height:40px;line-height:40px;text-align:bottom;padding:0 20px 0 20px;}
+	li.active{ background:url(play.gif) no-repeat;background-position:160px;}
+	li.active1{ background:url(play.png) no-repeat;background-position:160px;}
+	.box{ width:202px;height:80px;background:lightblue;position:relative;}
+	.btn{ width:160px;height:40px;text-align: center;padding-top:5px;margin-bottom:-5px;}
+	.pro{ width:160px;height:40px;}
+	.pro_box{ width:160px;height:10px;background:#fff;position:relative;margin-top:15px;}
+	.pro_bar{ width:0px;height:10px;background:#000;}
+	.pro_btn{ height:26px;width:10px;background:darkgoldenrod;position:absolute;left:0;top:-8px;}
+	.vol{ position:absolute;top:6px;right:12px;width:12px;height:70px;background:#000;}
+	.v_bar{ height:0px;width:12px;background:#fff;}
+	.v_btn{ width:20px;height:5px;background:darkgoldenrod;position:absolute;top:0;left:-4px;}
+</style>
+<script>
+	function toDou(num){
+		return num<10?'0'+num:''+num;
+	}
+	function getT(n){
+		var m = parseInt(n/60);
+		var s = parseInt(n%60);
+		return m>0?toDou(m)+':'+toDou(s):'00:'+toDou(s);
+	}
+	window.onload = function(){
+		var oA = document.getElementById('a1');
+		var aLi = document.querySelectorAll('li');
+		var aLiLen = aLi.length;
+		var aMusic = ['千千阙歌','时间都去哪儿了','小苹果','夜的钢琴曲','雨的印记'];
+		
+		var o2p = document.querySelector('.playpause');
+		var oStop = document.querySelector('.stop');
+		var oTime = document.querySelector('.protime');
+		var oPbox = document.querySelector('.pro_box');
+		var oPbar = document.querySelector('.pro_bar');
+		var oPbtn = document.querySelector('.pro_btn');
+		var oVbox = document.querySelector('.vol');
+		var oVbar = document.querySelector('.v_bar');
+		var oVbtn = document.querySelector('.v_btn'); 
+		
+		o2p.onclick = function(){
+			var oLiact = document.querySelector('.active')||document.querySelector('.active1');
+			if(this.value == '暂停'){
+				oA.pause();
+				oLiact.className = "active1";
+				this.value = '播放';
+			}else{
+				oA.play();
+				oLiact.className = "active";
+				this.value = '暂停';
+			}
+		};
+		oStop.onclick = function(){
+			var oLiact = document.querySelector('.active')||document.querySelector('.active1');
+			oA.pause();
+			oA.currentTime = 0;
+			oLiact.className = "active1";
+			if(o2p.value = "暂停"){
+				o2p.value = "播放";
+			}
+		}
+		
+		oA.ontimeupdate = function(){
+			var oScale = oA.currentTime/oA.duration;
+			oPbtn.style.left = (oPbox.offsetWidth-oPbtn.offsetWidth)*oScale+'px';
+			oPbar.style.width = oPbox.offsetWidth*oScale+'px';
+			oTime.innerHTML = getT(oA.currentTime)+'/'+getT(oA.duration);
+		};
+		
+		oPbtn.onmousedown = function(ev){
+			var disX = ev.pageX - oPbtn.offsetLeft;
+			document.onmousemove = function(ev){
+				var l = ev.pageX-disX;
+				if(l<0){
+					l = 0;
+				}else if(l>oPbox.offsetWidth-oPbtn.offsetWidth){
+					l = oPbox.offsetWidth-oPbtn.offsetWidth;
+				}
+				oPbtn.style.left = l+'px';
+				var scale = l/(oPbox.offsetWidth-oPbtn.offsetWidth);
+				oPbar.style.width = scale*oPbox.offsetWidth+'px';
+				oA.currentTime = scale*oA.duration;
+			};
+			document.onmouseup=function(){
+				document.onmousemove=null;
+				document.onmouseup=null;
+			};
+			return false;
+		};
+		
+		oVbtn.onmousedown=function(ev){
+			var disY = ev.pageY-oVbtn.offsetTop;
+			document.onmousemove=function(ev){
+				var t = ev.pageY-disY;
+				if(t<0){
+					t = 0;
+				}else if(t>oVbox.offsetHeight-oVbtn.offsetHeight){
+					t = oVbox.offsetHeight-oVbtn.offsetHeight;
+				}
+				oVbtn.style.top = t+'px';
+				var scale = t/(oVbox.offsetHeight-oVbtn.offsetHeight);
+				oVbar.style.height = scale*100+'%';
+				
+				oA.volume = 1-scale;
+			};
+			document.onmouseup=function(){
+				document.onmousemove=null;
+				document.onmouseup=null;
+			};
+			return false;
+		};
+		
+		for(var i = 0;i<aLiLen;i++){
+			;(function(index){
+				aLi[index].ondblclick = function(){
+					for(var i = 0;i<aLiLen;i++){
+						aLi[i].className = '';
+						o2p.value = "暂停";
+					}
+					this.className = 'active';
+					oA.src = 'mp3/'+aMusic[index]+'.mp3';
+				};
+			})(i);
+		}
+	};
+</script>
+</head>
+<body>
+	<audio src="mp3/千千阙歌.mp3" autoplay id="a1"></audio>
+	<ul>
+		<li class="active">千千阙歌</li>
+		<li>时间都去哪儿了</li>
+		<li>小苹果</li>
+		<li>夜的钢琴曲</li>
+		<li>雨的印记</li>
+	</ul>
+	<div class="box" >
+		<div class="btn">
+			<input type="button" class="playpause" value="暂停">
+			<input type="button" class="stop" value="停止">
+			<span class="protime">00:00/00:00</span>
+		</div>
+		<div class="pro">
+			<div class="pro_box">
+				<div class="pro_bar"></div>
+				<div class="pro_btn"></div>
+			</div>	
+		</div>
+		<div class="vol">
+			<div class="v_bar"></div>
+			<div class="v_btn"></div>
+		</div>
+	</div>
+</body>
+</html>
